@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__Default=Host=db;Port=5432;Username=postgres;Password=devpassword;Database=postgres;SSL Mode=Disable
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src/data:/app/data:ro
+
+volumes:
+  db_data:

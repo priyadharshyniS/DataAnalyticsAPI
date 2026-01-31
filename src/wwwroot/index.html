@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DataAnalyticsApi UI</title>
+  <style>body{font-family:Segoe UI,Arial;margin:20px}label{display:block;margin-top:8px}button{margin:6px 0}</style>
+</head>
+<body>
+  <h2>DataAnalyticsApi - Simple UI</h2>
+
+  <section>
+    <h3>Trigger CSV Refresh</h3>
+    <label><input type="checkbox" id="overwrite" /> Overwrite existing data</label>
+    <button id="btnRefresh">Trigger Refresh</button>
+    <pre id="refreshResult"></pre>
+  </section>
+
+  <section>
+    <h3>Query Revenue</h3>
+    <label>Start date: <input type="date" id="start" /></label>
+    <label>End date: <input type="date" id="end" /></label>
+    <div>
+      <button data-endpoint="total" class="queryBtn">Total</button>
+      <button data-endpoint="by_product" class="queryBtn">By Product</button>
+      <button data-endpoint="by_category" class="queryBtn">By Category</button>
+      <button data-endpoint="by_region" class="queryBtn">By Region</button>
+    </div>
+    <pre id="queryResult"></pre>
+  </section>
+
+  <script>
+    const base = location.origin;
+
+    document.getElementById('btnRefresh').addEventListener('click', async () => {
+      const overwrite = document.getElementById('overwrite').checked;
+      const res = await fetch(base + '/api/revenue/refresh?overwrite=' + overwrite, { method: 'POST' });
+      const txt = await res.text();
+      document.getElementById('refreshResult').textContent = res.status + ' ' + txt;
+    });
+
+    document.querySelectorAll('.queryBtn').forEach(b => b.addEventListener('click', async (e) => {
+      const ep = e.target.dataset.endpoint;
+      const start = document.getElementById('start').value;
+      const end = document.getElementById('end').value;
+      let qs = [];
+      if (start) qs.push('start=' + encodeURIComponent(start));
+      if (end) qs.push('end=' + encodeURIComponent(end));
+      const url = base + '/api/revenue/' + ep + (qs.length ? ('?' + qs.join('&')) : '');
+      const res = await fetch(url);
+      const json = await res.json();
+      document.getElementById('queryResult').textContent = JSON.stringify(json, null, 2);
+    }));
+  </script>
+</body>
+</html>
